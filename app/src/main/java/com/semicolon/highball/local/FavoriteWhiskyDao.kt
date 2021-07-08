@@ -1,12 +1,10 @@
 package com.semicolon.highball.local
 
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import io.reactivex.Completable
 import io.reactivex.Single
 
+@Dao
 interface FavoriteWhiskyDao {
 
     @Query("SELECT * FROM FavoriteWhiskyRoomData")
