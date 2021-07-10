@@ -33,7 +33,6 @@ fun SearchBar(
         },
         modifier = Modifier
             .padding(horizontal = 20.dp, vertical = 5.dp)
-            .height(50.dp)
             .fillMaxSize(),
         shape = RoundedCornerShape(10.dp),
         colors = TextFieldDefaults.textFieldColors(
