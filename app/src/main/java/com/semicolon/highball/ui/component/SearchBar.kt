@@ -27,58 +27,43 @@ fun SearchBar(
     var isFocused by remember { mutableStateOf(false) }
     var buttonSize by remember { mutableStateOf(if (isFocused) 80.dp else 0.dp) }
 
-    if (true) {
-        ConstraintLayout(
-            modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 5.dp)
-                .height(40.dp)
-                .fillMaxSize()
-                .padding(0.dp)
-        ) {
-            val (textField, cancelButton) = createRefs()
+    ConstraintLayout(
+        modifier = Modifier
+            .padding(horizontal = 20.dp, vertical = 5.dp)
+            .height(40.dp)
+            .fillMaxSize()
+            .padding(0.dp)
+    ) {
+        val (textField, cancelButton) = createRefs()
 
-            SearchTextField(
-                modifier = Modifier
-                    .constrainAs(textField) {
-                        start.linkTo(parent.absoluteLeft)
-                        end.linkTo(cancelButton.absoluteLeft)
-                        width = Dimension.fillToConstraints
-                    },
-                onSearchClick = {
-                    onSearchClick(it)
-                    isFocused = false
-                    buttonSize = 0.dp
+        SearchTextField(
+            modifier = Modifier
+                .constrainAs(textField) {
+                    start.linkTo(parent.absoluteLeft)
+                    end.linkTo(cancelButton.absoluteLeft)
+                    width = Dimension.fillToConstraints
                 },
-                onFocused = {
-                    buttonSize = 80.dp
-                }
-            )
+            onSearchClick = {
+                onSearchClick(it)
+                isFocused = false
+                buttonSize = 0.dp
+            },
+            onFocused = {
+                buttonSize = 80.dp
+            }
+        )
 
-            CancelSearchButton(
-                modifier = Modifier
-                    .requiredWidth(buttonSize)
-                    .constrainAs(cancelButton) {
-                        end.linkTo(parent.absoluteRight)
-                    },
-                onClick = {
-                    isFocused = false
-                    buttonSize = 0.dp
-                }
-            )
-        }
-    } else {
-        Row(
+        CancelSearchButton(
             modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 5.dp)
-                .height(40.dp)
-                .fillMaxSize()
-                .padding(0.dp)
-        ) {
-            SearchTextField(
-                onSearchClick = { onSearchClick(it) },
-                onFocused = { isFocused = true }
-            )
-        }
+                .requiredWidth(buttonSize)
+                .constrainAs(cancelButton) {
+                    end.linkTo(parent.absoluteRight)
+                },
+            onClick = {
+                isFocused = false
+                buttonSize = 0.dp
+            }
+        )
     }
 }
 
@@ -114,9 +99,8 @@ fun SearchTextField(
             value = text,
             onValueChange = { text = it },
             keyboardActions = KeyboardActions {
-                focusManager.clearFocus()
-                if (text.isEmpty()) return@KeyboardActions
                 onSearchClick(text)
+                focusManager.clearFocus()
             },
             maxLines = 1,
             singleLine = true,
