@@ -1,5 +1,8 @@
 package com.semicolon.highball.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +52,7 @@ fun SearchBar(
                 buttonSize = 0.dp
             },
             onFocused = {
+                isFocused = true
                 buttonSize = 80.dp
             }
         )
@@ -56,6 +60,7 @@ fun SearchBar(
         CancelSearchButton(
             modifier = Modifier
                 .requiredWidth(buttonSize)
+                .animateContentSize()
                 .constrainAs(cancelButton) {
                     end.linkTo(parent.absoluteRight)
                 },
