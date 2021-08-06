@@ -9,11 +9,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 val remoteModule = module {
     single {
         Retrofit.Builder()
-            .baseUrl("")
+            .baseUrl("https://evening-citadel-85778.herokuapp.com:443")
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build()
     }
 
-    single { get<Retrofit>().create(WhiskyService::class.java) }
+    single <WhiskyService> { get<Retrofit>().create(WhiskyService::class.java) }
 }

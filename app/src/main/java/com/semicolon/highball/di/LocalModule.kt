@@ -1,6 +1,7 @@
 package com.semicolon.highball.di
 
 import androidx.room.Room
+import com.semicolon.highball.local.FavoriteWhiskyDao
 import com.semicolon.highball.local.FavoriteWhiskyDatabase
 import org.koin.dsl.module
 
