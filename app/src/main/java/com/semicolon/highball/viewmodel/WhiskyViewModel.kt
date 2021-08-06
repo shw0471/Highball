@@ -6,6 +6,7 @@ import com.semicolon.highball.base.SingleLiveEvent
 import com.semicolon.highball.local.FavoriteWhiskyDao
 import com.semicolon.highball.local.FavoriteWhiskyRoomData
 import com.semicolon.highball.remote.WhiskyData
+import com.semicolon.highball.remote.WhiskyResponse
 import com.semicolon.highball.remote.WhiskyService
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -20,24 +21,30 @@ class WhiskyViewModel(
 
     private val compositeDisposable = CompositeDisposable()
 
-    private val whiskyList = MutableLiveData<List<WhiskyData>>()
-    private val whiskyInfo = MutableLiveData<WhiskyData>()
-    private val favoriteWhiskyList = MutableLiveData<List<FavoriteWhiskyRoomData>>()
+    val nextPage = MutableLiveData<Int>(1)
+    val whiskyList = MutableLiveData<WhiskyResponse>()
+    val whiskyInfo = MutableLiveData<WhiskyData>()
+    val favoriteWhiskyList = MutableLiveData<List<FavoriteWhiskyRoomData>>()
 
-    private val messageEvent = SingleLiveEvent<String>()
-    private val failedToGetWhiskyListEvent = SingleLiveEvent<Unit>()
-    private val failedToGetWhiskyInfoEvent = SingleLiveEvent<Unit>()
-    private val failedToGetFavoriteWhiskyListEvent = SingleLiveEvent<Unit>()
-    private val addFavoriteWhiskyEvent =  SingleLiveEvent<Unit>()
-    private val deleteFavoriteWhiskyEvent = SingleLiveEvent<Unit>()
+    val messageEvent = SingleLiveEvent<String>()
+    val failedToGetWhiskyListEvent = SingleLiveEvent<Unit>()
+    val failedToGetWhiskyInfoEvent = SingleLiveEvent<Unit>()
+    val failedToGetFavoriteWhiskyListEvent = SingleLiveEvent<Unit>()
+    val favoriteWhiskyStateEvent = SingleLiveEvent<Boolean>()
 
-    fun getWhiskyList() {
-        val result = whiskyService.getWhiskyList()
+
+    fun getWhiskyList(page: Int) {
+        println("log $page")
+        val result = whiskyService.getWhiskyList(page)
         val disposableSingleObserver =
-            object : DisposableSingleObserver<List<WhiskyData>>() {
+            object : DisposableSingleObserver<WhiskyResponse>() {
 
-                override fun onSuccess(t: List<WhiskyData>) {
-                    whiskyList.value = t
+                override fun onSuccess(t: WhiskyResponse) {
+                    if (page == 1) whiskyList.value = t
+                    else whiskyList.value!!.results.addAll(t.results)
+
+                    if(t.next == null) nextPage.value = 0
+                    else nextPage.value = nextPage.value!!.plus(1)
                 }
 
                 override fun onError(e: Throwable) {
@@ -79,13 +86,13 @@ class WhiskyViewModel(
         addDisposable(result, disposableSingleObserver)
     }
 
-    fun addFavoriteWhisky(id: Int) {
+    fun addFavoriteWhisky(id: Int, title: String, price: Int, imageUrl: String) {
         val result = favoriteWhiskyDao
-            .addFavoriteWhisky(FavoriteWhiskyRoomData(id, "", 0, "")).toSingle {}
+            .addFavoriteWhisky(FavoriteWhiskyRoomData(id, title, price, imageUrl)).toSingle {}
         val disposableSingleObserver =
             object : DisposableSingleObserver<Unit>() {
                 override fun onSuccess(t: Unit) {
-                    addFavoriteWhiskyEvent.call()
+                    favoriteWhiskyStateEvent.setValue(true)
                 }
 
                 override fun onError(e: Throwable) {
@@ -101,11 +108,28 @@ class WhiskyViewModel(
         val disposableSingleObserver =
             object : DisposableSingleObserver<Unit>() {
                 override fun onSuccess(t: Unit) {
-                    deleteFavoriteWhiskyEvent.call()
+                    favoriteWhiskyStateEvent.setValue(false)
                 }
 
                 override fun onError(e: Throwable) {
                     messageEvent.setValue("failed to delete")
+                }
+            }
+        addDisposable(result, disposableSingleObserver)
+    }
+
+    fun isFavoriteWhisky(id: Int) {
+        val result = favoriteWhiskyDao
+            .getFavoriteWhiskyListById(id)
+        val disposableSingleObserver =
+            object : DisposableSingleObserver<List<FavoriteWhiskyRoomData>>() {
+                override fun onSuccess(t: List<FavoriteWhiskyRoomData>) {
+                    if (t.isEmpty()) favoriteWhiskyStateEvent.setValue(false)
+                    else favoriteWhiskyStateEvent.setValue(true)
+                }
+
+                override fun onError(e: Throwable) {
+                    messageEvent.setValue("failed to check")
                 }
             }
         addDisposable(result, disposableSingleObserver)
